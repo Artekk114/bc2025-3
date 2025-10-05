@@ -7,24 +7,38 @@ program
  .option('-d, --display', 'Виведення результату в консоль')
  .option('-f, --furnished', 'Відображати лише будинки зі статусом "furnished" - з меблями')
  .option('-p, --price <value>', 'Відображати лише будинки з ціною меншою за зазначену', parseFloat);
-program.parse();
-
-const options = program.opts();
-
-if(!options.input){
-    console.error('Please, specify input file');
-    process.exit(1);
+ 
+program.configureOutput({
+outputError: (str, write) => {
+    
 }
-if(!fs.existsSync(options.input)){
+});
+
+program.exitOverride();
+
+try {
+  program.parse();
+} catch (err) {
+  if (err.code === 'commander.missingMandatoryOptionValue' || err.code === 'commander.optionMissingArgument') {
+    console.error('Please, specify input file');
+  } else {
+    console.error(err.message);
+  }
+  process.exit(1);
+}
+const options = program.opts();
+if(!fs.existsSync(options.output)){
     console.error('Cannot find input file');
     process.exit(1);
 }
- 
- const content = fs.readFileSync(options.input, 'utf-8');
+const content = fs.readFileSync(options.input, 'utf-8');
 
- const data = JSON.parse(content);
- 
+const data = JSON.parse(content);
 
+
+// if(!options.input){
+//    program.error('Please, specify input file');
+// }
 
 let FilteredData=data;
 
@@ -34,9 +48,6 @@ if(options.furnished){
 if(options.price !== undefined){
     FilteredData=FilteredData.filter(item=>item.price && item.price < options.price);
 }
-
-
-
 
  const result = FilteredData
  .map(item=>`${item.price} ${item.area}`)
