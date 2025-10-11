@@ -10,25 +10,39 @@ program
  
 program.configureOutput({
 outputError: (str, write) => {
-    
-}
+    }
 });
+
+
 
 program.exitOverride();
 
 try {
   program.parse();
-} catch (err) {
-  if (err.code === 'commander.missingMandatoryOptionValue' || err.code === 'commander.optionMissingArgument') {
-    console.error('Please, specify input file');
-  } else {
-    console.error(err.message);
   }
+ catch (err) {
+if
+ ((err.code === 'commander.missingMandatoryOptionValue' && err.message.includes('-i') )|| 
+  (err.code ==='commander.optionMissingArgument'&& err.message.includes('-i'))
+ ) {
+    console.error('Please, specify input file');
+  }
+  else if (err.code ==='commander.optionMissingArgument'&& err.message.includes('-o')) {
+    console.error('Cannot find input file');
+  }
+  else console.error(err.message)
+
   process.exit(1);
 }
 const options = program.opts();
-if(!fs.existsSync(options.output)){
+
+if( options.output && !fs.existsSync(options.output)){
     console.error('Cannot find input file');
+    process.exit(1);
+}
+
+if( options.input && !fs.existsSync(options.input)){
+    console.error('Input file not found');
     process.exit(1);
 }
 const content = fs.readFileSync(options.input, 'utf-8');
